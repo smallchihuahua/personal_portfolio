@@ -1,0 +1,65 @@
+#map{
+	height: 300px;
+	margin: 75px 0px;
+}
+
+.form-control{
+	border-radius: 0px;
+	height: 45px;
+	border-color: $extra-color;
+
+	&:focus{
+		box-shadow: none;
+		border-color: $primary-color;
+	}
+}
+
+textarea.form-control{
+	height: auto;
+}
+
+.text-black{
+	color: $black;
+}
+
+.contact.section {
+	padding-top: 64px;
+	padding-bottom: 32px;
+}
+
+.contact-form-section {
+	margin-top: 0;
+}
+
+.contact__form .btn {
+	font-size: 16px;
+}
+
+.contact h4,
+.contact p,
+.contact .form-control {
+	letter-spacing: normal;
+}
+
+.contact .btn {
+	letter-spacing: 2px;
+}
+
+.contact-title {
+	h2{
+		position: relative;
+		padding-bottom: 0;
+
+		&:after {
+			display: none;
+	}
+	}
+}
+
+.contact-title-asterisks {
+	color: $primary-color;
+	font-size: 18px;
+	letter-spacing: 5px;
+	margin-top: 12px;
+	white-space: nowrap;
+}

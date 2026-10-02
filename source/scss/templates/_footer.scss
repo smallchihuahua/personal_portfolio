@@ -1,0 +1,45 @@
+.footer{
+	margin-top: auto;
+	padding: 30px 0px;
+	background: $black;
+
+	p {
+		color: rgba(255,255,255,.7);
+	}
+
+	a {
+		color: rgba(255,255,255,.7);
+	}
+}
+
+.footer-heading {
+	color: $white !important;
+	letter-spacing: normal;
+}
+
+.footer-contact-details {
+	letter-spacing: normal;
+}
+
+.footer-social-links {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0 14px;
+}
+
+.footer-social-separator {
+	color: $white;
+}
+
+.footer-widget{
+
+	a{
+		color: rgba(255,255,255,.5);
+		text-transform: capitalize;
+		&:hover{
+			color: $primary-color;
+		}
+	}
+}
+	
