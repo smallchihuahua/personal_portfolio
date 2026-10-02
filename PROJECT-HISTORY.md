@@ -14,6 +14,8 @@ Last updated: October 1, 2026
   - Asterisk divider under the site title
   - Project filters: All Projects, Design, Photography, Art
   - Masonry-style image gallery with no image cropping
+  - Clickable image lightbox with next/previous controls for multi-image projects
+  - Automatically optimized WebP gallery images, reducing delivered portfolio media from 48.8 MB to 2.48 MB
   - About Streusel Studio section
 - Footer:
   - Copyright © 2026 Streusel Studio
@@ -41,6 +43,8 @@ source\images\portfolio\design\spring-poster\
 ```
 
 When the local preview is running, adding or removing images automatically refreshes the gallery.
+
+Original images stay in the `source` folders. During local and Netlify builds, portfolio images are resized to a maximum of 1600px and converted to WebP automatically, so the website stays fast without any extra steps.
 
 ## Local preview
 
