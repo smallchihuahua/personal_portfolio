@@ -117,11 +117,11 @@
     width: 100%;
     flex-wrap: nowrap;
     justify-content: space-between;
-    overflow: hidden;
   }
 
   .portfolio .btn-group > .btn {
     flex: 0 0 25%;
+    min-width: 0;
     width: 25%;
     padding: 8px 0 !important;
     font-size: clamp(11px, 3.2vw, 14px);
@@ -134,6 +134,10 @@
   .portfolio .container {
     padding-right: 20px;
     padding-left: 20px;
+  }
+
+  .portfolio .btn-group > .btn {
+    font-size: clamp(10px, 3vw, 12px);
   }
 
   .filter-label-full {
