@@ -1,40 +1,32 @@
-# Thomson - a sleek and Bootstrap portfolio template that highlights your work effectively.
-#### Preview
+# Van's Personal Portfolio
 
- - [Demo](https://themewagon.github.io/thomson/)
+Personal portfolio website for Streusel Studio, featuring visual design, photography, and art.
 
-#### Download
- - [Download from ThemeWagon](https://themewagon.com/themes/thomson/)
+## Local development
 
-## Getting Started
-
-1. Clone Repository
-```
-git clone https://github.com/themewagon/thomson.git
-```
-2. Install Dependencies
-```
-npm i
-```
-3. Run the development server:
-
-```bash
+```powershell
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-## Author 
-```
-Design and code is completely written by Themefisher and development team. 
-```
+Open http://localhost:3000 to preview the site.
 
-## License
+## Adding portfolio projects
 
- - Design and Code is Copyright &copy; <a href="https://themefisher.com/" target="_blank">Themefisher</a>
- - Licensed cover under [MIT]
- - Distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
+Add images to one of these folders:
+
+- `source\images\portfolio\design`
+- `source\images\portfolio\photography`
+- `source\images\portfolio\art`
+
+New images automatically appear in the correct gallery filter. For a multi-image project, create a named folder inside a category and put the project images inside it.
+
+See [HOW-TO-ADD-PROJECTS.md](HOW-TO-ADD-PROJECTS.md) for the complete workflow.
+
+## Deployment
+
+Netlify runs `npm run build` and publishes the generated `theme` folder. Push updates to GitHub, then connect the repository in Netlify to deploy.
+
+## Third-party notices
+
+Required third-party license notices are in [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).

@@ -1,3 +1,9 @@
+# Third-party license notices
+
+This project includes modified code from a third-party template. Its required license notice is preserved below.
+
+## Themefisher template
+
 The MIT License (MIT)
 
 Copyright (c) 2016 - Present, Themefisher
