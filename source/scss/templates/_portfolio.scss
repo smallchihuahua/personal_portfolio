@@ -107,6 +107,40 @@
   }
 }
 
+@media (max-width: 991px) {
+  .portfolio .btn-group {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .portfolio .btn-group > .btn {
+    padding: 8px 0 !important;
+    font-size: clamp(13px, 4vw, 16px);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 575px) {
+  .portfolio .container {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .portfolio-gallery {
+    column-count: 1;
+    column-gap: 12px;
+  }
+
+  .portfolio-gallery > .shuffle-item {
+    margin-bottom: 12px !important;
+  }
+
+  .portfolio .btn-group > .btn {
+    font-size: 12px;
+  }
+}
+
 .inner-box .image .overlay-box{
     position: absolute;
     left: 0px;
