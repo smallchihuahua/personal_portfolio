@@ -19,6 +19,8 @@ source\images\portfolio\design\spring-poster\
 
 The site automatically lists all supported image types: PNG, JPG, JPEG, GIF, and WebP. Run `npm run build` before publishing the website so new images and the portfolio list are included.
 
+Portfolio images are automatically resized to fit within 1600px and delivered as compressed WebP files during the build. Keep the originals in the category folders; the optimized copies are generated for the live website.
+
 ## Publishing with Netlify
 
 Netlify is configured to run `npm run build` and publish the generated `theme` folder. After adding images, commit and push the changes; Netlify will build the site and include the new portfolio entries automatically.

@@ -74,12 +74,17 @@ AOS.init({
         }
 
         project.images.forEach(function (source, index) {
+            var imageLink = document.createElement('a');
             var image = document.createElement('img');
+
+            imageLink.className = 'popup-gallery';
+            imageLink.href = source;
             image.src = source;
             image.alt = project.title + (project.images.length > 1 ? ' image ' + (index + 1) : '');
             image.className = 'img-fluid w-100 d-block';
             image.loading = 'lazy';
-            imageContainer.appendChild(image);
+            imageLink.appendChild(image);
+            imageContainer.appendChild(imageLink);
         });
 
         overlay.className = 'overlay-box';
@@ -116,6 +121,14 @@ AOS.init({
     var gallery = document.querySelector('[data-portfolio-gallery]');
 
     if (gallery) {
+        $(gallery).magnificPopup({
+            delegate: '.popup-gallery',
+            type: 'image',
+            gallery: {
+                enabled: true
+            }
+        });
+
         window.fetch('portfolio.json')
             .then(function (response) {
                 if (!response.ok) {

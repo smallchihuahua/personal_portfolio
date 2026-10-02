@@ -64,6 +64,14 @@
   min-width: 0;
 }
 
+.portfolio-image-pair .popup-gallery {
+  min-width: 0;
+}
+
+.popup-gallery {
+  display: block;
+}
+
 .portfolio-gallery {
   display: block;
   column-count: 2;
@@ -172,6 +180,7 @@
     -o-transition: all .6s ease;
     transition: all .6s ease;
     overflow: hidden;
+    pointer-events: none;
 
 }
 

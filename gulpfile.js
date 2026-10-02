@@ -13,6 +13,7 @@ const gm = require("gulp-gm");
 const comments = require("gulp-header-comment");
 const fs = require("fs");
 const nodePath = require("path");
+const sharp = require("sharp");
 
 var path = {
   src: {
@@ -33,6 +34,33 @@ var path = {
     dir: "theme/",
   },
 };
+
+const portfolioCategories = [
+  { directory: "design", filter: "design" },
+  { directory: "photography", filter: "photo" },
+  { directory: "art", filter: "art" },
+];
+const portfolioImageExtension = /\.(png|jpe?g|gif|webp)$/i;
+
+function optimizedPortfolioPath(filePath) {
+  const relativePath = nodePath.relative("source", filePath).split(nodePath.sep).join("/");
+
+  return nodePath.extname(filePath).toLowerCase() === ".gif"
+    ? relativePath
+    : relativePath.replace(/\.[^.]+$/, ".webp");
+}
+
+function portfolioImagePaths(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap(function (entry) {
+    const entryPath = nodePath.join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return portfolioImagePaths(entryPath);
+    }
+
+    return entry.isFile() && portfolioImageExtension.test(entry.name) ? [entryPath] : [];
+  });
+}
 
 // HTML
 gulp.task("html", function () {
@@ -132,7 +160,12 @@ gulp.task("images-blur", function () {
 // image build
 gulp.task("images", function () {
   return gulp
-    .src(path.src.images)
+    .src([
+      path.src.images,
+      "!source/images/portfolio/design/**/*",
+      "!source/images/portfolio/photography/**/*",
+      "!source/images/portfolio/art/**/*",
+    ])
     .pipe(gulp.dest(path.build.dir + "images/"))
     .pipe(
       bs.reload({
@@ -141,15 +174,45 @@ gulp.task("images", function () {
     );
 });
 
+// Optimized portfolio images
+gulp.task("portfolio-images", async function () {
+  const portfolioRoot = "source/images/portfolio";
+
+  for (const category of portfolioCategories) {
+    const categoryPath = nodePath.join(portfolioRoot, category.directory);
+
+    if (!fs.existsSync(categoryPath)) {
+      continue;
+    }
+
+    for (const sourcePath of portfolioImagePaths(categoryPath)) {
+      const outputPath = nodePath.join(path.build.dir, optimizedPortfolioPath(sourcePath));
+      await fs.promises.mkdir(nodePath.dirname(outputPath), { recursive: true });
+
+      if (nodePath.extname(sourcePath).toLowerCase() === ".gif") {
+        await fs.promises.copyFile(sourcePath, outputPath);
+        continue;
+      }
+
+      await sharp(sourcePath)
+        .rotate()
+        .resize({
+          width: 1600,
+          height: 1600,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 82, effort: 5 })
+        .toFile(outputPath);
+    }
+  }
+
+  bs.reload();
+});
+
 // Portfolio manifest
 gulp.task("portfolio-data", function (cb) {
   const portfolioRoot = "source/images/portfolio";
-  const categories = [
-    { directory: "design", filter: "design" },
-    { directory: "photography", filter: "photo" },
-    { directory: "art", filter: "art" },
-  ];
-  const imageExtension = /\.(png|jpe?g|gif|webp)$/i;
   const projects = [];
 
   function titleFromName(name) {
@@ -160,23 +223,7 @@ gulp.task("portfolio-data", function (cb) {
       .trim();
   }
 
-  function imagePaths(directory) {
-    return fs.readdirSync(directory, { withFileTypes: true }).flatMap(function (entry) {
-      const entryPath = nodePath.join(directory, entry.name);
-
-      if (entry.isDirectory()) {
-        return imagePaths(entryPath);
-      }
-
-      if (entry.isFile() && imageExtension.test(entry.name)) {
-        return [nodePath.relative("source", entryPath).split(nodePath.sep).join("/")];
-      }
-
-      return [];
-    });
-  }
-
-  categories.forEach(function (category) {
+  portfolioCategories.forEach(function (category) {
     const categoryPath = nodePath.join(portfolioRoot, category.directory);
 
     if (!fs.existsSync(categoryPath)) {
@@ -186,16 +233,16 @@ gulp.task("portfolio-data", function (cb) {
     fs.readdirSync(categoryPath, { withFileTypes: true }).forEach(function (entry) {
       const entryPath = nodePath.join(categoryPath, entry.name);
 
-      if (entry.isFile() && imageExtension.test(entry.name)) {
+      if (entry.isFile() && portfolioImageExtension.test(entry.name)) {
         projects.push({
           category: category.filter,
           title: titleFromName(entry.name),
-          images: [nodePath.relative("source", entryPath).split(nodePath.sep).join("/")],
+          images: [optimizedPortfolioPath(entryPath)],
         });
       }
 
       if (entry.isDirectory()) {
-        const images = imagePaths(entryPath);
+        const images = portfolioImagePaths(entryPath).map(optimizedPortfolioPath);
 
         if (images.length) {
           projects.push({
@@ -256,7 +303,7 @@ gulp.task("watch", function () {
   gulp.watch(path.src.htminc, gulp.series("html"));
   gulp.watch(path.src.scss, gulp.series("scss"));
   gulp.watch(path.src.js, gulp.series("js"));
-  gulp.watch(path.src.images, gulp.series("images", "portfolio-data"));
+  gulp.watch(path.src.images, gulp.series("images", "portfolio-images", "portfolio-data"));
   gulp.watch(path.src.fonts, gulp.series("fonts"));
   gulp.watch(path.src.plugins, gulp.series("plugins"));
 });
@@ -270,6 +317,7 @@ gulp.task(
     "js",
     "scss",
     "images",
+    "portfolio-images",
     "portfolio-data",
     "fonts",
     "plugins",
@@ -293,6 +341,7 @@ gulp.task(
     "js",
     "scss",
     "images",
+    "portfolio-images",
     "portfolio-data",
     "fonts",
     "plugins",
@@ -326,6 +375,7 @@ gulp.task(
     "scss",
     "scss-files",
     "images",
+    "portfolio-images",
     "portfolio-data",
     "images-blur",
     "fonts",
@@ -337,5 +387,5 @@ gulp.task(
 // Deploy Task
 gulp.task(
   "deploy",
-  gulp.series("html", "js", "scss", "images", "portfolio-data", "fonts", "plugins", "static")
+  gulp.series("html", "js", "scss", "images", "portfolio-images", "portfolio-data", "fonts", "plugins", "static")
 );

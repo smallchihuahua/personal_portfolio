@@ -25,7 +25,8 @@
     "gulp-util": "^3.0.8",
     "jshint": "^2.13.6",
     "jshint-stylish": "^2.2.1",
-    "sass": "^1.54.0"
+    "sass": "^1.54.0",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "gh-pages": "^6.3.0"
