@@ -12,6 +12,30 @@
 	}
 }
 
+.footer-content {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 32px;
+	padding: 0 4vw;
+}
+
+.footer-brand {
+	display: block;
+	flex: 0 0 auto;
+
+	img {
+		display: block;
+		height: 103px;
+		width: auto;
+		border-radius: 50%;
+	}
+}
+
+.footer-copyright {
+	white-space: nowrap;
+}
+
 .footer-heading {
 	color: $white !important;
 	letter-spacing: normal;
@@ -30,6 +54,13 @@
 
 .footer-social-separator {
 	color: $white;
+}
+
+@include mobile {
+	.footer-content {
+		flex-wrap: wrap;
+		justify-content: flex-start;
+	}
 }
 
 .footer-widget{

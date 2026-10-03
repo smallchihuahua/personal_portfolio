@@ -1,7 +1,11 @@
 .main-nav {
-	.navbar-brand img {
-		max-height: 103px;
-		width: auto;
+	padding: 30px 0;
+
+	.site-header-content {
+		display: flex;
+		flex: 1 1 100%;
+		align-items: center;
+		padding: 0 4vw;
 	}
 
 	.header-top-socials{
@@ -12,6 +16,31 @@
 			padding: 20px 6px;
 		}
 	}
+}
+
+.site-brand {
+	display: flex;
+	flex: 0 1 auto;
+	flex-direction: column;
+	color: $black;
+
+	&:hover {
+		color: $black;
+	}
+}
+
+.site-brand-title {
+	margin: 0;
+	font-size: 48px;
+	line-height: 1;
+}
+
+.site-brand-separator {
+	margin-top: 12px;
+	color: $primary-color;
+	font-size: 18px;
+	letter-spacing: 5px;
+	white-space: nowrap;
 }
 
 .navbar-nav .nav-link {
@@ -101,6 +130,23 @@ ul.dropdown-menu > li > a, .navbar ul ul ul.dropdown-menu li .nav-link {
 
 
 @include mobile{
+	.main-nav {
+		padding: 20px 0;
+
+		.site-header-content {
+			flex-wrap: wrap;
+		}
+	}
+
+	.site-brand-title {
+		font-size: 32px;
+	}
+
+	.site-brand-separator {
+		font-size: 12px;
+		letter-spacing: 2px;
+	}
+
     .navbar-nav .dropdown-menu {
         position: absolute;
     }

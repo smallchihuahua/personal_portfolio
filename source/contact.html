@@ -1,5 +1,5 @@
 @@include('header.htm')
-@@include('blocks/nav-2.htm')
+@@include('blocks/nav-contact.htm')
 <!-- contact form start -->
 <section class="contact section">
     <div class="container">
@@ -10,7 +10,11 @@
                     <div class="contact-title-asterisks" aria-hidden="true">* * * * * * *</div>
                 </div>
 
-                <form id="contact-form" class="contact__form mt-0" method="post" action="mail.php">
+                <form id="contact-form" class="contact__form mt-0" name="contact" method="post" action="/contact.html" data-netlify="true" netlify-honeypot="bot-field">
+                    <input type="hidden" name="form-name" value="contact">
+                    <p class="d-none">
+                        <label>Do not fill this out if you are human: <input name="bot-field"></label>
+                    </p>
              <!-- form message -->
                 <div class="row">
                     <div class="col-12">
@@ -23,23 +27,23 @@
                 <div class="form-row">
                     <div class="col-lg-6">
                         <div class="form-group mb-3">
-                            <input name="name" type="text" class="form-control" placeholder="Your Name">
+                            <input name="name" type="text" class="form-control" placeholder="Your Name" required>
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="form-group mb-3">
-                            <input name="name" type="text" class="form-control" placeholder="Your Subject">
+                            <input name="subject" type="text" class="form-control" placeholder="Your Subject" required>
                         </div>
                     </div>
 
                     <div class="col-lg-12">
                         <div class="form-group mb-3">
-                            <input name="email" type="email" class="form-control" placeholder="Email Address">
+                            <input name="email" type="email" class="form-control" placeholder="Email Address" required>
                         </div>
                     </div>
                     <div class="col-lg-12">
                          <div class="form-group-2 mb-4">
-                            <textarea name="message" class="form-control" rows="6" placeholder="Your Message"></textarea>
+                            <textarea name="message" class="form-control" rows="6" placeholder="Your Message" required></textarea>
                         </div>
 
                         <div class="text-center">
