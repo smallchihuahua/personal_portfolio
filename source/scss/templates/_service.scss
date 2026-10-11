@@ -1,5 +1,13 @@
 .service-home{
 	position: relative;
+
+	&.section {
+		padding: 64px 0;
+	}
+
+	.about-page-copy {
+		text-align: center;
+	}
 }
 
 .service-item{

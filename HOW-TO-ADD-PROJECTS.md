@@ -1,26 +1,17 @@
 # Adding projects
 
-1. Open `source\images\portfolio`.
-2. Put each new image in exactly one category folder:
-   - `design`
-   - `photography`
-   - `art`
-3. Start the preview with `npm run dev`. New images appear automatically after the browser refreshes.
+## Design projects
 
-The image file name becomes the project title. For example, `spring-poster.png` displays as `spring poster`.
+Each folder directly inside `source\images\portfolio\design` is one Design project. The folder name becomes its title and URL, and numbered image filenames set the cover and page order. No project data file is required.
 
-For one project with multiple images in a single tile, create a folder inside its category, name it after the project, and put all its images inside:
+See `MAINTENANCE.md` for the day-to-day workflow.
 
-```text
-source\images\portfolio\design\spring-poster\
-  front.png
-  back.png
-```
+## Photography
 
-The site automatically lists all supported image types: PNG, JPG, JPEG, GIF, and WebP. Run `npm run build` before publishing the website so new images and the portfolio list are included.
+Put original photographs in `source\images\portfolio\photography`. Their filenames remain the single title source: `papel-picado-guadalajara.jpg` displays as `papel picado guadalajara` in both the hover overlay and lightbox. Do not create a second photography-title list.
 
-Portfolio images are automatically resized to fit within 1600px and delivered as compressed WebP files during the build. Keep the originals in the category folders; the optimized copies are generated for the live website.
+Run `npm run build` before publishing. Original source images are retained; the build creates WebP copies capped at 1600px for delivery.
 
 ## Publishing with Netlify
 
-Netlify is configured to run `npm run build` and publish the generated `theme` folder. After adding images, commit and push the changes; Netlify will build the site and include the new portfolio entries automatically.
+Netlify runs `npm run build` and publishes the generated `theme` folder. Commit and push your image changes; Netlify generates the gallery manifest and project pages during the build.

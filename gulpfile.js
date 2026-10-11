@@ -18,7 +18,7 @@ const sharp = require("sharp");
 var path = {
   src: {
     // source paths
-    html: "source/*.html",
+    html: ["source/index.html", "source/about.html", "source/contact.html", "source/photography.html"],
     htminc: "source/partials/**/*",
     incdir: "source/partials/",
     plugins: "source/plugins/**/*",
@@ -37,8 +37,7 @@ var path = {
 
 const portfolioCategories = [
   { directory: "design", filter: "design" },
-  { directory: "photography", filter: "photo" },
-  { directory: "art", filter: "art" },
+  { directory: "photography", filter: "photography" },
 ];
 const portfolioImageExtension = /\.(png|jpe?g|gif|webp)$/i;
 
@@ -62,6 +61,227 @@ function portfolioImagePaths(directory) {
   });
 }
 
+function titleFromName(name) {
+  return name
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function displayTitleFromName(name) {
+  return titleFromName(name).replace(/\b\w/g, function (character) {
+    return character.toUpperCase();
+  });
+}
+
+function slugFromName(name) {
+  return titleFromName(name)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function imagePosition(filePath) {
+  const filename = nodePath.basename(filePath, nodePath.extname(filePath));
+  const match = filename.match(/-(\d+)([a-z])?$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    number: Number(match[1]),
+    suffix: (match[2] || "").toLowerCase(),
+  };
+}
+
+function compareImagePaths(firstPath, secondPath) {
+  const firstPosition = imagePosition(firstPath);
+  const secondPosition = imagePosition(secondPath);
+
+  if (firstPosition && secondPosition) {
+    if (firstPosition.number !== secondPosition.number) {
+      return firstPosition.number - secondPosition.number;
+    }
+
+    return firstPosition.suffix.localeCompare(secondPosition.suffix);
+  }
+
+  return nodePath.basename(firstPath).localeCompare(nodePath.basename(secondPath), undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
+function groupedProjectImages(imagePaths) {
+  const groups = [];
+  const groupsByPosition = new Map();
+
+  imagePaths.sort(compareImagePaths).forEach(function (imagePath) {
+    const position = imagePosition(imagePath);
+    const groupKey = position ? String(position.number) : imagePath;
+    let group = groupsByPosition.get(groupKey);
+
+    if (!group) {
+      group = [];
+      groupsByPosition.set(groupKey, group);
+      groups.push(group);
+    }
+
+    group.push({
+      source: nodePath.relative("source", imagePath).split(nodePath.sep).join("/"),
+    });
+  });
+
+  return groups.map(function (group) {
+    return group.length > 1 ? { layout: "group", images: group } : group[0];
+  });
+}
+
+function projectCoverSource(project) {
+  const firstItem = project.images[0];
+
+  return firstItem.images ? firstItem.images[0].source : firstItem.source;
+}
+
+function projectDescription(projectDirectory) {
+  const descriptionPath = nodePath.join(projectDirectory, "description.txt");
+
+  if (!fs.existsSync(descriptionPath)) {
+    return "";
+  }
+
+  return fs.readFileSync(descriptionPath, "utf8").replace(/^\uFEFF/, "").trim();
+}
+
+function designProjectsFromFolders() {
+  const designDirectory = nodePath.join("source", "images", "portfolio", "design");
+
+  if (!fs.existsSync(designDirectory)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(designDirectory, { withFileTypes: true })
+    .filter(function (entry) {
+      return entry.isDirectory();
+    })
+    .sort(function (first, second) {
+      return compareImagePaths(first.name, second.name);
+    })
+    .map(function (entry) {
+      const projectDirectory = nodePath.join(designDirectory, entry.name);
+      const imagePaths = portfolioImagePaths(projectDirectory).sort(compareImagePaths);
+
+      if (!imagePaths.length) {
+        return null;
+      }
+
+      return {
+        title: displayTitleFromName(entry.name),
+        slug: slugFromName(entry.name),
+        images: groupedProjectImages(imagePaths),
+        description: projectDescription(projectDirectory),
+      };
+    })
+    .filter(Boolean);
+}
+
+function optimizedSourcePath(sourcePath) {
+  return optimizedPortfolioPath(nodePath.join("source", sourcePath));
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function descriptionMarkup(description) {
+  if (!description) {
+    return "";
+  }
+
+  return description
+    .split(/\r?\n\s*\r?\n/)
+    .map(function (paragraph) {
+      return "<p>" + escapeHtml(paragraph.trim()).replace(/\r?\n/g, "<br>") + "</p>";
+    })
+    .join("");
+}
+
+function renderProjectImages(project) {
+  return project.images
+    .map(function (item) {
+      const images = item.images || [item];
+      const layout = item.layout || "normal";
+      const imageMarkup = images
+        .map(function (image) {
+          return (
+            '<img src="/' +
+            optimizedSourcePath(image.source) +
+            '" alt="' +
+            escapeHtml(image.alt || "") +
+            '" loading="lazy" decoding="async">'
+          );
+        })
+        .join("");
+
+      return '<figure class="project-image project-image--' + escapeHtml(layout) + '">' + imageMarkup + "</figure>";
+    })
+    .join("\n");
+}
+
+function projectPageHtml(project) {
+  const header = fs
+    .readFileSync("source/partials/header.htm", "utf8")
+    .replace("<title>@@title</title>", "<title>" + escapeHtml(project.title) + " — Streusel Studio</title>")
+    .replace(/href="(plugins|css)\//g, 'href="/$1/');
+  const navigation = fs.readFileSync("source/partials/blocks/nav-home.htm", "utf8");
+  const footer = fs
+    .readFileSync("source/partials/blocks/footer.htm", "utf8")
+    .replace('src="images/', 'src="/images/');
+  const scripts = fs
+    .readFileSync("source/partials/footer.htm", "utf8")
+    .replace(/src="(plugins|js)\//g, 'src="/$1/');
+  const description = descriptionMarkup(project.description);
+  const descriptionClass = description ? " project-header--with-description" : "";
+
+  return (
+    header +
+    navigation +
+    '<main class="project-page section" data-site-view="design">' +
+    '<div class="container">' +
+    '<a class="project-back-link" href="/">← design</a>' +
+    '<header class="project-header' +
+    descriptionClass +
+    '">' +
+    "<h1>" +
+    escapeHtml(project.title) +
+    "</h1>" +
+    (description ? '<div class="project-description">' + description + "</div>" : "") +
+    "</header>" +
+    '<div class="project-media">' +
+    renderProjectImages(project) +
+    "</div>" +
+    '<a class="project-back-link project-back-link--bottom" href="/">← back to design</a>' +
+    "</div>" +
+    "</main>" +
+    footer +
+    scripts
+  );
+}
+
+function rootRelativePageHtml(pagePath) {
+  return fs
+    .readFileSync(pagePath, "utf8")
+    .replace(/(href|src)="(plugins|css|images|js)\//g, '$1="/$2/');
+}
+
 // HTML
 gulp.task("html", function () {
   return gulp
@@ -71,6 +291,7 @@ gulp.task("html", function () {
         basepath: path.src.incdir,
         context: {
           version: "premium",
+          title: "Streusel Studio",
         },
       })
     )
@@ -213,52 +434,62 @@ gulp.task("portfolio-images", async function () {
 // Portfolio manifest
 gulp.task("portfolio-data", function (cb) {
   const portfolioRoot = "source/images/portfolio";
-  const projects = [];
-
-  function titleFromName(name) {
-    return name
-      .replace(/\.[^.]+$/, "")
-      .replace(/[-_]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  portfolioCategories.forEach(function (category) {
-    const categoryPath = nodePath.join(portfolioRoot, category.directory);
-
-    if (!fs.existsSync(categoryPath)) {
-      return;
-    }
-
-    fs.readdirSync(categoryPath, { withFileTypes: true }).forEach(function (entry) {
-      const entryPath = nodePath.join(categoryPath, entry.name);
-
-      if (entry.isFile() && portfolioImageExtension.test(entry.name)) {
-        projects.push({
-          category: category.filter,
-          title: titleFromName(entry.name),
-          images: [optimizedPortfolioPath(entryPath)],
-        });
-      }
-
-      if (entry.isDirectory()) {
-        const images = portfolioImagePaths(entryPath).map(optimizedPortfolioPath);
-
-        if (images.length) {
-          projects.push({
-            category: category.filter,
-            title: titleFromName(entry.name),
-            images: images,
-          });
-        }
-      }
-    });
+  const photographyDirectory = nodePath.join(portfolioRoot, "photography");
+  const photography = fs.existsSync(photographyDirectory)
+    ? portfolioImagePaths(photographyDirectory).map(function (imagePath) {
+        return {
+          title: titleFromName(nodePath.basename(imagePath)),
+          image: optimizedPortfolioPath(imagePath),
+        };
+      })
+    : [];
+  const design = designProjectsFromFolders().map(function (project) {
+    return {
+      title: project.title,
+      slug: project.slug,
+      cover: optimizedSourcePath(projectCoverSource(project)),
+      coverAlt: project.title,
+      disciplines: ["Design"],
+      url: "/work/" + project.slug + "/",
+    };
   });
 
   fs.mkdirSync(path.build.dir, { recursive: true });
   fs.writeFileSync(
     nodePath.join(path.build.dir, "portfolio.json"),
-    JSON.stringify({ projects: projects }, null, 2) + "\n"
+    JSON.stringify({ design: design, photography: photography }, null, 2) + "\n"
+  );
+  cb();
+});
+
+gulp.task("project-pages", function (cb) {
+  designProjectsFromFolders().forEach(function (project) {
+    const pageDirectory = nodePath.join(path.build.dir, "work", project.slug);
+
+    fs.mkdirSync(pageDirectory, { recursive: true });
+    fs.writeFileSync(nodePath.join(pageDirectory, "index.html"), projectPageHtml(project));
+  });
+  cb();
+});
+
+gulp.task("contact-page", function (cb) {
+  const contactDirectory = nodePath.join(path.build.dir, "contact");
+
+  fs.mkdirSync(contactDirectory, { recursive: true });
+  fs.writeFileSync(
+    nodePath.join(contactDirectory, "index.html"),
+    rootRelativePageHtml(nodePath.join(path.build.dir, "contact.html"))
+  );
+  cb();
+});
+
+gulp.task("about-page", function (cb) {
+  const aboutDirectory = nodePath.join(path.build.dir, "about");
+
+  fs.mkdirSync(aboutDirectory, { recursive: true });
+  fs.writeFileSync(
+    nodePath.join(aboutDirectory, "index.html"),
+    rootRelativePageHtml(nodePath.join(path.build.dir, "about.html"))
   );
   cb();
 });
@@ -299,11 +530,11 @@ gulp.task("clean", function (cb) {
 
 // Watch Task
 gulp.task("watch", function () {
-  gulp.watch(path.src.html, gulp.series("html"));
-  gulp.watch(path.src.htminc, gulp.series("html"));
+  gulp.watch(path.src.html, gulp.series("html", "about-page", "contact-page", "project-pages"));
+  gulp.watch(path.src.htminc, gulp.series("html", "about-page", "contact-page", "project-pages"));
   gulp.watch(path.src.scss, gulp.series("scss"));
   gulp.watch(path.src.js, gulp.series("js"));
-  gulp.watch(path.src.images, gulp.series("images", "portfolio-images", "portfolio-data"));
+  gulp.watch(path.src.images, gulp.series("images", "portfolio-images", "portfolio-data", "project-pages"));
   gulp.watch(path.src.fonts, gulp.series("fonts"));
   gulp.watch(path.src.plugins, gulp.series("plugins"));
 });
@@ -314,11 +545,14 @@ gulp.task(
   gulp.series(
     "clean",
     "html",
+    "about-page",
+    "contact-page",
     "js",
     "scss",
     "images",
     "portfolio-images",
     "portfolio-data",
+    "project-pages",
     "fonts",
     "plugins",
     "static",
@@ -338,11 +572,14 @@ gulp.task(
   gulp.series(
     "clean",
     "html",
+    "about-page",
+    "contact-page",
     "js",
     "scss",
     "images",
     "portfolio-images",
     "portfolio-data",
+    "project-pages",
     "fonts",
     "plugins",
     "static"
@@ -371,12 +608,15 @@ gulp.task(
   gulp.series(
     "clean",
     "html",
+    "about-page",
+    "contact-page",
     "js",
     "scss",
     "scss-files",
     "images",
     "portfolio-images",
     "portfolio-data",
+    "project-pages",
     "images-blur",
     "fonts",
     "plugins",
@@ -387,5 +627,18 @@ gulp.task(
 // Deploy Task
 gulp.task(
   "deploy",
-  gulp.series("html", "js", "scss", "images", "portfolio-images", "portfolio-data", "fonts", "plugins", "static")
+  gulp.series(
+    "html",
+    "about-page",
+    "contact-page",
+    "js",
+    "scss",
+    "images",
+    "portfolio-images",
+    "portfolio-data",
+    "project-pages",
+    "fonts",
+    "plugins",
+    "static"
+  )
 );

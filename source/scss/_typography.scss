@@ -15,7 +15,7 @@ body {
   font-weight: 400;
   letter-spacing: 0;
   line-height:1.7em;
-  color: #454545;
+  color: $body-color;
   text-transform: lowercase;
 
 }
@@ -25,11 +25,11 @@ body * {
 }
 
 p{
-  color:#454545;
+  color:$body-color;
 }
 
 ::placeholder {
-  color: #4a4a4a !important;
+  color: $body-color !important;
   opacity: 1;
 }
 h1,.h1,h2,.h2,h3,.h3,h4,.h4,h5,.h5,h6,.h6 {

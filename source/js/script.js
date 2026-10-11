@@ -38,23 +38,7 @@ AOS.init({
         autoplayTimeout:8000
     });
 
-    // Masonry-style portfolio filtering
-    function filterPortfolio(input) {
-        $('.portfolio-gallery .shuffle-item').each(function () {
-            var groups = this.getAttribute('data-groups');
-            var isVisible = input.value === 'all' || groups.indexOf('"' + input.value + '"') !== -1;
-            this.classList.toggle('is-filtered-out', !isVisible);
-        });
-    }
-
-    $('input[name="shuffle-filter"]').on('change', function (evt) {
-        var input = evt.currentTarget;
-        if (input.checked) {
-            filterPortfolio(input);
-        }
-    });
-
-    function createPortfolioItem(project) {
+    function createPortfolioItem(project, view) {
         var item = document.createElement('div');
         var innerBox = document.createElement('div');
         var imageContainer = document.createElement('div');
@@ -62,39 +46,39 @@ AOS.init({
         var overlayInner = document.createElement('div');
         var overlayContent = document.createElement('div');
         var title = document.createElement('h5');
-        var category = document.createElement('p');
+
+        var imageLink = document.createElement('a');
+        var image = document.createElement('img');
 
         item.className = 'shuffle-item';
-        item.setAttribute('data-groups', JSON.stringify([project.category]));
         innerBox.className = 'position-relative inner-box';
         imageContainer.className = 'image position-relative';
+        image.className = 'img-fluid w-100 d-block';
+        image.loading = 'lazy';
+        image.decoding = 'async';
 
-        if (project.images.length > 1) {
-            imageContainer.classList.add('portfolio-image-pair');
+        if (view === "photography") {
+            imageLink.className = 'popup-gallery';
+            imageLink.href = project.image;
+            imageLink.setAttribute('data-title', project.title || "");
+            image.alt = project.alt || project.title || "";
+        } else {
+            imageLink.className = 'portfolio-project-link';
+            imageLink.href = project.url;
+            imageLink.setAttribute('aria-label', "View " + project.title);
+            image.alt = project.coverAlt || project.title;
         }
 
-        project.images.forEach(function (source, index) {
-            var imageLink = document.createElement('a');
-            var image = document.createElement('img');
-
-            imageLink.className = 'popup-gallery';
-            imageLink.href = source;
-            image.src = source;
-            image.alt = project.title + (project.images.length > 1 ? ' image ' + (index + 1) : '');
-            image.className = 'img-fluid w-100 d-block';
-            image.loading = 'lazy';
-            imageLink.appendChild(image);
-            imageContainer.appendChild(imageLink);
-        });
+        image.src = view === "photography" ? project.image : project.cover;
+        imageLink.appendChild(image);
+        imageContainer.appendChild(imageLink);
 
         overlay.className = 'overlay-box';
         overlayInner.className = 'overlay-inner';
         overlayContent.className = 'overlay-content';
         title.className = 'mb-0';
         title.textContent = project.title;
-        category.textContent = project.category === 'photo' ? 'photography' : project.category;
         overlayContent.appendChild(title);
-        overlayContent.appendChild(category);
         overlayInner.appendChild(overlayContent);
         overlay.appendChild(overlayInner);
         imageContainer.appendChild(overlay);
@@ -104,28 +88,39 @@ AOS.init({
         return item;
     }
 
-    function renderPortfolio(projects) {
+    function renderPortfolio(projects, view) {
         var gallery = document.querySelector('[data-portfolio-gallery]');
 
         if (!gallery) {
             return;
         }
 
-        projects.forEach(function (project) {
-            gallery.appendChild(createPortfolioItem(project));
+        projects[view].forEach(function (project) {
+            gallery.appendChild(createPortfolioItem(project, view));
         });
-
-        filterPortfolio(document.querySelector('input[name="shuffle-filter"]:checked'));
     }
 
     var gallery = document.querySelector('[data-portfolio-gallery]');
+    var portfolio = document.querySelector('[data-portfolio-view]');
 
-    if (gallery) {
+    if (gallery && portfolio) {
+        var view = portfolio.getAttribute('data-portfolio-view');
+
+        if (view === "photography") {
+            document.title = "Photography — Streusel Studio";
+        }
+
         $(gallery).magnificPopup({
             delegate: '.popup-gallery',
             type: 'image',
             gallery: {
-                enabled: true
+                enabled: true,
+                tCounter: "%curr% / %total%"
+            },
+            image: {
+                titleSrc: function (item) {
+                    return item.el.attr("data-title") || "";
+                }
             }
         });
 
@@ -138,7 +133,7 @@ AOS.init({
                 return response.json();
             })
             .then(function (data) {
-                renderPortfolio(data.projects);
+                renderPortfolio(data, view);
             })
             .catch(function (error) {
                 gallery.textContent = 'Portfolio images could not be loaded.';
@@ -146,5 +141,8 @@ AOS.init({
             });
     }
 
+    document.querySelectorAll("[data-current-year]").forEach(function (element) {
+        element.textContent = new Date().getFullYear();
+    });
 
 })(jQuery);

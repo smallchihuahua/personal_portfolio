@@ -46,9 +46,35 @@
 .navbar-nav .nav-link {
 	padding: 20px 15px!important;
 	text-transform: uppercase;
-	font-size: 18px;
+	font-size: 14px;
 	letter-spacing: 1px;
     font-weight: 700;
+}
+
+.navbar-nav {
+	display: flex;
+	flex-direction: row;
+}
+
+.main-nav .navbar-toggler {
+	margin-left: auto;
+}
+
+.main-nav .navbar-collapse {
+	flex-basis: 100%;
+}
+
+@media (min-width: 992px) {
+	.main-nav .navbar-collapse {
+		flex: 1 1 auto;
+		justify-content: flex-end;
+	}
+}
+
+@media (max-width: 991px) {
+	.main-nav .site-header-content {
+		flex-wrap: wrap;
+	}
 }
 
 ul.dropdown-menu {
@@ -145,6 +171,11 @@ ul.dropdown-menu > li > a, .navbar ul ul ul.dropdown-menu li .nav-link {
 	.site-brand-separator {
 		font-size: 12px;
 		letter-spacing: 2px;
+	}
+
+	.navbar-nav .nav-link {
+		padding: 12px 8px !important;
+		font-size: 12px;
 	}
 
     .navbar-nav .dropdown-menu {

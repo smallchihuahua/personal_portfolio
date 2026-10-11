@@ -1,6 +1,6 @@
 # Streusel Studio project history
 
-Last updated: October 1, 2026
+Last updated: October 11, 2026
 
 ## Current site
 
@@ -8,43 +8,22 @@ Last updated: October 1, 2026
 - Primary color: earthy green (`#365a3d`)
 - Type: DotGothic16, with Gulim/Dotum fallbacks
 - Visual style: lowercase text, asterisk dividers, compact spacing, readable dark charcoal body text
-- Navigation: Home and Contact only
+- Header navigation: About and Contact anchors; Design and Photography portfolio links
 - Homepage:
   - Streusel Studio logo in the header
   - Asterisk divider under the site title
-  - Project filters: All Projects, Design, Photography, Art
-  - Masonry-style image gallery with no image cropping
-  - Clickable image lightbox with next/previous controls for multi-image projects
+  - Design project index with a dedicated project-page system
+  - Photography masonry gallery with a title-aware lightbox and next/previous controls
   - Automatically optimized WebP gallery images, reducing delivered portfolio media from 48.8 MB to 2.48 MB
   - About Streusel Studio section
 - Footer:
-  - Copyright © 2026 Streusel Studio
+  - Automatic copyright year
   - Email: streuselstudio@gmail.com
   - Social links: Instagram, GitHub, LinkedIn
 
 ## Adding portfolio projects
 
-Put images in one of these folders:
-
-```text
-source\images\portfolio\design
-source\images\portfolio\photography
-source\images\portfolio\art
-```
-
-- A single image becomes one gallery project automatically.
-- The filename becomes the project title. Example: `spring-poster.png` displays as `spring poster`.
-- To combine several images into one gallery tile, create a project folder inside the category and put its images there:
-
-```text
-source\images\portfolio\design\spring-poster\
-  front.png
-  back.png
-```
-
-When the local preview is running, adding or removing images automatically refreshes the gallery.
-
-Original images stay in the `source` folders. During local and Netlify builds, portfolio images are resized to a maximum of 1600px and converted to WebP automatically, so the website stays fast without any extra steps.
+See `MAINTENANCE.md`. Design projects are discovered from folders in `source\images\portfolio\design`; photography titles continue to derive from image filenames.
 
 ## Local preview
 
@@ -64,16 +43,15 @@ Then open http://localhost:3000.
 - Published folder: `theme`
 - Node version: 20
 
-To publish changes, add or remove images, then commit and push the project. Netlify will build the site and generate the updated portfolio automatically.
+To publish changes, commit and push the project. Netlify builds the project pages and gallery automatically.
 
 ## Key files
 
 | Purpose | File |
 |---|---|
-| Homepage gallery layout | `source\partials\blocks\portfolio-home.htm` |
-| Automatic image manifest generator | `gulpfile.js` |
-| Gallery rendering and filters | `source\js\script.js` |
-| Portfolio styling | `source\scss\templates\_portfolio.scss` |
+| Design gallery layout | `source\partials\blocks\portfolio-home.htm` |
+| Automatic gallery/project-page generator | `gulpfile.js` |
+| Gallery rendering and lightbox | `source\js\script.js` |
 | Contact page | `source\contact.html` |
 | Shared footer | `source\partials\blocks\footer.htm` |
 | Netlify settings | `netlify.toml` |

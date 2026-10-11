@@ -1,20 +1,9 @@
-<section class="portfolio" id="portfolio">
+<section class="portfolio" id="portfolio" data-portfolio-view="design">
 	<div class="container">
-		<div class="row mb-5 portfolio-filters">
-			<div class="col-12">
-				<div class="btn-group btn-group-toggle" data-toggle="buttons">
-					<label class="btn active">
-						<input type="radio" name="shuffle-filter" value="all" checked="checked" />All Projects
-					</label>
-					<label class="btn">
-						<input type="radio" name="shuffle-filter" value="design" />Design
-					</label>
-					<label class="btn">
-						<input type="radio" name="shuffle-filter" value="photo" /><span class="filter-label-full">Photography</span><span class="filter-label-short">Photo</span>
-					</label>
-				</div>
-			</div>
-		</div>
+		<nav class="portfolio-filters" aria-label="Portfolio sections">
+			<a class="portfolio-section-link is-active" href="/" aria-current="page">design</a>
+			<a class="portfolio-section-link" href="/photography.html">photography</a>
+		</nav>
 
 		<div class="row portfolio-gallery" data-portfolio-gallery></div>
 	</div>
