@@ -30,7 +30,7 @@
   "boss": false,
   "debug": false,
   "eqnull": false,
-  "es3": true,
+  "es3": false,
   "es5": false,
   "esnext": true,
   "moz": false,

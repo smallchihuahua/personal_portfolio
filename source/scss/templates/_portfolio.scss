@@ -3,7 +3,7 @@
 // Portfolio
 // 
 .portfolio{
-  padding-bottom: 24px;
+  padding-bottom: 64px;
 
 }
 
@@ -52,12 +52,34 @@
   column-count: auto;
   column-width: 280px;
   column-gap: 16px;
+  column-fill: balance;
   margin-right: 0;
   margin-left: 0;
 }
 
+[data-portfolio-view="design"] .portfolio-gallery,
+[data-portfolio-view="motion"] .portfolio-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+[data-portfolio-view="design"] .portfolio-gallery > .shuffle-item,
+[data-portfolio-view="motion"] .portfolio-gallery > .shuffle-item {
+  margin-bottom: 0 !important;
+  max-width: 400px;
+}
+
+.portfolio-project-link { display: block; }
+
+.inner-box:focus-within .image .overlay-box,
+.inner-box:focus-within .image .overlay-box:before { opacity: 1; left: 0; }
+.inner-box:focus-within .overlay-content h5 { transform: none; }
+
 .portfolio-filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 24px;
   margin-bottom: 24px;
 }
@@ -92,7 +114,7 @@
 }
 
 .portfolio-gallery > .shuffle-item {
-  display: inline-block;
+  display: block;
   width: 100% !important;
   max-width: 100%;
   margin-bottom: 16px !important;
@@ -143,6 +165,7 @@
 }
 
 .project-page {
+  --project-content-max-width: 920px;
   padding: 32px 0 72px;
 }
 
@@ -157,8 +180,9 @@
 }
 
 .project-header {
-  max-width: 680px;
-  margin-top: 52px;
+  width: 100%;
+  max-width: var(--project-content-max-width);
+  margin: 52px auto 0;
 }
 
 .project-header h1 {
@@ -166,16 +190,9 @@
 }
 
 .project-description {
-  margin-bottom: 0;
-}
-
-.project-header--with-description {
-  max-width: 680px;
-}
-
-.project-description {
-  max-width: 560px;
-  margin-top: 20px;
+  width: 100%;
+  margin: 20px 0 0;
+  overflow-wrap: anywhere;
 }
 
 .project-description p {

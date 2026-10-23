@@ -6,6 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "gulp",
+    "preview": "node scripts/preview.js",
+    "test:browser": "node scripts/validate-browser.js && node scripts/validate-media.js",
     "build": "gulp build",
     "build:docs": "gulp build:docs",
     "download": "gulp download",

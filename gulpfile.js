@@ -14,11 +14,12 @@ const comments = require("gulp-header-comment");
 const fs = require("fs");
 const nodePath = require("path");
 const sharp = require("sharp");
+const media = require("./scripts/media");
 
 var path = {
   src: {
     // source paths
-    html: ["source/index.html", "source/about.html", "source/contact.html", "source/photography.html"],
+    html: ["source/index.html", "source/about.html", "source/contact.html", "source/photography.html", "source/motion.html"],
     htminc: "source/partials/**/*",
     incdir: "source/partials/",
     plugins: "source/plugins/**/*",
@@ -214,29 +215,31 @@ function descriptionMarkup(description) {
     .join("");
 }
 
-function renderProjectImages(project) {
-  return project.images
-    .map(function (item) {
+async function renderProjectImages(project) {
+  return (await Promise.all(project.images
+    .map(async function (item, index) {
       const images = item.images || [item];
       const layout = item.layout || "normal";
-      const imageMarkup = images
-        .map(function (image) {
+      const imageMarkup = (await Promise.all(images
+        .map(async function (image) {
+          const metadata = await sharp(nodePath.join("source", image.source)).metadata();
+          const dimensions = metadata.autoOrient || metadata;
           return (
             '<img src="/' +
             optimizedSourcePath(image.source) +
             '" alt="' +
             escapeHtml(image.alt || "") +
-            '" loading="lazy" decoding="async">'
+            '" width="' + dimensions.width + '" height="' + dimensions.height + '" loading="' + (index === 0 ? "eager" : "lazy") + '" decoding="async">'
           );
-        })
+        })))
         .join("");
 
       return '<figure class="project-image project-image--' + escapeHtml(layout) + '">' + imageMarkup + "</figure>";
-    })
+    })))
     .join("\n");
 }
 
-function projectPageHtml(project) {
+async function projectPageHtml(project) {
   const header = fs
     .readFileSync("source/partials/header.htm", "utf8")
     .replace("<title>@@title</title>", "<title>" + escapeHtml(project.title) + " — Streusel Studio</title>")
@@ -254,9 +257,9 @@ function projectPageHtml(project) {
   return (
     header +
     navigation +
-    '<main class="project-page section" data-site-view="design">' +
+    '<main class="project-page section" data-site-view="' + (project.category || "design") + '">' +
     '<div class="container">' +
-    '<a class="project-back-link" href="/">← design</a>' +
+    '<a class="project-back-link" href="' + (project.category === "motion" ? "/motion.html" : "/") + '">← ' + (project.category || "design") + '</a>' +
     '<header class="project-header' +
     descriptionClass +
     '">' +
@@ -266,9 +269,9 @@ function projectPageHtml(project) {
     (description ? '<div class="project-description">' + description + "</div>" : "") +
     "</header>" +
     '<div class="project-media">' +
-    renderProjectImages(project) +
+    (project.videos ? media.renderVideos(project) : await renderProjectImages(project)) +
     "</div>" +
-    '<a class="project-back-link project-back-link--bottom" href="/">← back to design</a>' +
+    '<a class="project-back-link project-back-link--bottom" href="' + (project.category === "motion" ? "/motion.html" : "/") + '">← back to ' + (project.category || "design") + '</a>' +
     "</div>" +
     "</main>" +
     footer +
@@ -425,6 +428,12 @@ gulp.task("portfolio-images", async function () {
         })
         .webp({ quality: 82, effort: 5 })
         .toFile(outputPath);
+      await media.thumbnails(sourcePath, outputPath);
+      if (category.directory === "photography") {
+        const original = nodePath.join(path.build.dir, "originals", nodePath.basename(sourcePath));
+        await fs.promises.mkdir(nodePath.dirname(original), { recursive: true });
+        await fs.promises.copyFile(sourcePath, original);
+      }
     }
   }
 
@@ -432,18 +441,20 @@ gulp.task("portfolio-images", async function () {
 });
 
 // Portfolio manifest
-gulp.task("portfolio-data", function (cb) {
+gulp.task("portfolio-data", async function () {
   const portfolioRoot = "source/images/portfolio";
   const photographyDirectory = nodePath.join(portfolioRoot, "photography");
   const photography = fs.existsSync(photographyDirectory)
-    ? portfolioImagePaths(photographyDirectory).map(function (imagePath) {
+    ? await Promise.all(portfolioImagePaths(photographyDirectory).map(async function (imagePath) {
         return {
           title: titleFromName(nodePath.basename(imagePath)),
           image: optimizedPortfolioPath(imagePath),
+          original: "originals/" + nodePath.basename(imagePath),
+          ...await media.imageData(imagePath, optimizedPortfolioPath(imagePath)),
         };
-      })
+      }))
     : [];
-  const design = designProjectsFromFolders().map(function (project) {
+  const design = await Promise.all(designProjectsFromFolders().map(async function (project) {
     return {
       title: project.title,
       slug: project.slug,
@@ -451,25 +462,32 @@ gulp.task("portfolio-data", function (cb) {
       coverAlt: project.title,
       disciplines: ["Design"],
       url: "/work/" + project.slug + "/",
+      ...await media.imageData(nodePath.join("source", projectCoverSource(project)), optimizedSourcePath(projectCoverSource(project))),
     };
-  });
+  }));
+  const motion = await Promise.all(media.motionProjects().map(async function (project) {
+    const thumbnail = project.thumbnailImage;
+    const metadata = thumbnail ? await sharp(thumbnail.source).metadata() : project.videos[0];
+    const dimensions = metadata.autoOrient || metadata;
+    return { title: project.title, slug: project.slug, cover: thumbnail ? thumbnail.url : project.videos[0].poster,
+      width: dimensions.width, height: dimensions.height,
+      url: "/work/" + project.slug + "/" };
+  }));
 
   fs.mkdirSync(path.build.dir, { recursive: true });
   fs.writeFileSync(
     nodePath.join(path.build.dir, "portfolio.json"),
-    JSON.stringify({ design: design, photography: photography }, null, 2) + "\n"
+    JSON.stringify({ design: design, motion: motion, photography: photography }, null, 2) + "\n"
   );
-  cb();
 });
 
-gulp.task("project-pages", function (cb) {
-  designProjectsFromFolders().forEach(function (project) {
+gulp.task("project-pages", async function () {
+  for (const project of designProjectsFromFolders().concat(media.motionProjects())) {
     const pageDirectory = nodePath.join(path.build.dir, "work", project.slug);
 
     fs.mkdirSync(pageDirectory, { recursive: true });
-    fs.writeFileSync(nodePath.join(pageDirectory, "index.html"), projectPageHtml(project));
-  });
-  cb();
+    fs.writeFileSync(nodePath.join(pageDirectory, "index.html"), await projectPageHtml(project));
+  }
 });
 
 gulp.task("contact-page", function (cb) {
@@ -530,6 +548,7 @@ gulp.task("clean", function (cb) {
 
 // Watch Task
 gulp.task("watch", function () {
+  gulp.watch("source/images/portfolio/motion/**/*", gulp.series("motion-media", "portfolio-data", "project-pages"));
   gulp.watch(path.src.html, gulp.series("html", "about-page", "contact-page", "project-pages"));
   gulp.watch(path.src.htminc, gulp.series("html", "about-page", "contact-page", "project-pages"));
   gulp.watch(path.src.scss, gulp.series("scss"));
@@ -540,6 +559,7 @@ gulp.task("watch", function () {
 });
 
 // dev Task
+gulp.task("motion-media", media.buildMotion);
 gulp.task(
   "default",
   gulp.series(
@@ -551,6 +571,7 @@ gulp.task(
     "scss",
     "images",
     "portfolio-images",
+    "motion-media",
     "portfolio-data",
     "project-pages",
     "fonts",
@@ -558,6 +579,9 @@ gulp.task(
     "static",
     gulp.parallel("watch", function () {
       bs.init({
+        open: false,
+        online: false,
+        notify: false,
         server: {
           baseDir: path.build.dir,
         },
@@ -578,6 +602,7 @@ gulp.task(
     "scss",
     "images",
     "portfolio-images",
+    "motion-media",
     "portfolio-data",
     "project-pages",
     "fonts",
@@ -615,6 +640,7 @@ gulp.task(
     "scss-files",
     "images",
     "portfolio-images",
+    "motion-media",
     "portfolio-data",
     "project-pages",
     "images-blur",
@@ -635,6 +661,7 @@ gulp.task(
     "scss",
     "images",
     "portfolio-images",
+    "motion-media",
     "portfolio-data",
     "project-pages",
     "fonts",

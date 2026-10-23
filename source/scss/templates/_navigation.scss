@@ -20,6 +20,8 @@
 
 .site-brand {
 	display: flex;
+	min-width: 0;
+	max-width: 100%;
 	flex: 0 1 auto;
 	flex-direction: column;
 	color: $black;
@@ -242,4 +244,9 @@ ul.dropdown-menu > li > a, .navbar ul ul ul.dropdown-menu li .nav-link {
     .btn-group > .btn {
         padding: 20px;
     }
+}
+
+@media (max-width: 360px) {
+  .main-nav .site-brand-title { font-size: clamp(20px, 8vw, 32px); }
+  .main-nav .site-brand-separator { font-size: clamp(6px, 3vw, 12px); letter-spacing: clamp(0px, .5vw, 2px); }
 }

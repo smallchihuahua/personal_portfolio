@@ -1,1 +1,4 @@
 An experimental lettering project inspired by the word "Stain", expanding into the alphabet and numbers.
+
+Tools Used:
+FireAlpaca - hand-drawn lettering

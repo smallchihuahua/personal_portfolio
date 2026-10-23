@@ -1,0 +1,14 @@
+{
+  "title": "Ring of Chain",
+  "slug": "ring-of-chain",
+  "thumbnail": "thumbnail.jpg",
+  "credits": [
+    "Music and lyrics: “Ring of Chain” by Citizen",
+    "Motion typography and original footage: Vanessa Camacho / Streusel Studio",
+    "Additional stock footage: Destocked (Version 2)"
+  ],
+  "videos": [
+    { "file": "ring-of-chain-lyrics-1.mp4", "title": "Version 1 — Handwritten Lyrics", "width": 1920, "height": 1080 },
+    { "file": "ring-of-chain-lyrics-2.mp4", "title": "Version 2 — Lyrics in Motion", "width": 1920, "height": 1080 }
+  ]
+}

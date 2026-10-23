@@ -1,0 +1,5 @@
+Two motion typography videos featuring digitally handwritten lyrics for “Ring of Chain” by Citizen. The second version syncs the lyrics to the music, pairing them with original videos and stock footage from Destocked.
+
+Tools used:
+FireAlpaca - hand-drawn animation (Adobe Animate-style workflow)
+Capcut - video editing (Adobe Premiere Pro-style workflow)

@@ -80,6 +80,38 @@ Delete the whole project folder, then commit and push. Its Design cover and proj
 
 Put one image directly in `source\images\portfolio\photography\`, then commit and push. Its filename becomes the Photography hover and lightbox title.
 
+## Preview locally
+
+Run `npm run dev`, then open `http://localhost:3000`. This builds and watches the development site; it does not deploy. `npm run build` creates `theme/`; `npm run preview` serves an existing build.
+
+Gallery images are generated as 320-, 640-, and 960-pixel WebP/JPEG variants when the source is large enough. Photography lightboxes use preserved original files. Do not edit generated files inside `theme/`.
+
+## Add a Motion project
+
+Create a folder under `source/images/portfolio/motion/`. Add the original MP4 files, a `description.txt`, and a `project.json`. Use the existing `ring-of-chain-lyrics/project.json` as a reference:
+
+```json
+{
+  "title": "Project title",
+  "slug": "unique-project-slug",
+  "thumbnail": "thumbnail.jpg",
+  "credits": ["Include the actual artist, music, footage and required license credits."],
+  "videos": [
+    { "file": "actual-video-filename.mp4", "title": "Video description", "width": 1920, "height": 1080 }
+  ]
+}
+```
+
+Use the source video's actual dimensions and filename. Video array order determines page order. Choose a slug that does not conflict with a Design project. The Motion card, `/work/<slug>/` page, posters, and players are generated automatically; no layout edits are needed. Include all required attribution in `credits`, without assuming or inventing license terms.
+
+The optional `thumbnail` filename is relative to the project folder and supports PNG, JPG, JPEG, and WebP. Without a valid explicit filename, the build looks for `thumbnail` with one of those extensions, then falls back to the existing video poster. Custom images are copied unchanged and use their own dimensions; the gallery does not load video files.
+
+Motion builds require FFmpeg with H.264/AAC encoding. Install it on PATH or set `FFMPEG_PATH` to its executable. On this development machine the build also recognizes ShareX's installed FFmpeg. The first build generates 1280-pixel-wide H.264/AAC MP4 copies with fast-start metadata and JPEG posters; sources are preserved. Later builds reuse `.cache/motion/` until the source changes. This cache and the generated `theme/` directory are excluded from Git. A fresh build environment also needs FFmpeg.
+
+## Browser validation
+
+The browser checks use the installed Chrome browser and Chrome DevTools Protocol, without additional browser packages. Start the local preview and launch a separate headless Chrome with `--remote-debugging-port=9223` and a dedicated temporary `--user-data-dir`, then run `npm run test:browser`. Layout checks cover the existing routes at mobile, tablet and desktop sizes, with CSS viewport/device scale equivalents of 50–200% zoom. These simulations do not operate the browser's native zoom menu. External Google Font requests are blocked during automated checks because this environment cannot reach that service; the site's existing font declaration is preserved. Results are saved to ignored `.tmp-*-results.json` files.
+
 ## Remove a photograph
 
 Delete the image from `source\images\portfolio\photography\`, then commit and push.
