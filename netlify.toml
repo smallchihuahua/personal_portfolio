@@ -1,6 +1,6 @@
 [build]
 publish = "theme"
-command = "npm run build"
+command = "npm install --prefix .cache/netlify-tools --no-save --package-lock=false --no-audit --no-fund ffmpeg-static@5.3.0 && FFMPEG_PATH=./.cache/netlify-tools/node_modules/ffmpeg-static/ffmpeg npm run build"
 
 [build.environment]
 NODE_VERSION = "20"
